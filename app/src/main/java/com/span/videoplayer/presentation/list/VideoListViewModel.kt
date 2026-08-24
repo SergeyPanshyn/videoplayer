@@ -4,11 +4,13 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.span.videoplayer.data.VideoDataSource
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @HiltViewModel
@@ -29,10 +31,12 @@ class VideoListViewModel @Inject constructor(
         viewModelScope.launch {
             _state.update { VideoListUiState.Loading }
             runCatching {
-                videoDataSource.getVideoList(sortOption.toDataSort())
+                withContext(Dispatchers.IO) {
+                    videoDataSource.getVideoList(sortOption.toDataSort())
+                }
             }.onSuccess { list ->
                 if (list.isEmpty()) {
-                    _state.update { VideoListUiState.Error("No video available.") }
+                    _state.update { VideoListUiState.Empty }
                 } else {
                     _state.update { VideoListUiState.Content(list.map { it.toUiModel() }) }
                 }

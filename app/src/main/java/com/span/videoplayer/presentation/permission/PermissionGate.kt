@@ -34,7 +34,6 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
-import java.nio.file.WatchEvent
 
 @Composable
 fun PermissionGate(
@@ -44,17 +43,17 @@ fun PermissionGate(
     val activity = context as Activity
     val lifecycleOwner = LocalLifecycleOwner.current
 
-    val videoPermission: String =
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            Manifest.permission.READ_MEDIA_VIDEO
-        } else {
-            Manifest.permission.READ_EXTERNAL_STORAGE
-        }
+    val videoPermission: String = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        Manifest.permission.READ_MEDIA_VIDEO
+    } else {
+        Manifest.permission.READ_EXTERNAL_STORAGE
+    }
 
     var hasPermission by remember {
         mutableStateOf(
-            ContextCompat.checkSelfPermission(context, videoPermission) ==
-                    PackageManager.PERMISSION_GRANTED
+            ContextCompat.checkSelfPermission(
+                context, videoPermission
+            ) == PackageManager.PERMISSION_GRANTED
         )
     }
 
@@ -63,8 +62,9 @@ fun PermissionGate(
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_RESUME) {
-                val granted = ContextCompat.checkSelfPermission(context, videoPermission) ==
-                        PackageManager.PERMISSION_GRANTED
+                val granted = ContextCompat.checkSelfPermission(
+                    context, videoPermission
+                ) == PackageManager.PERMISSION_GRANTED
                 hasPermission = granted
                 if (granted) permanentlyDenied = false
             }
@@ -97,22 +97,18 @@ fun PermissionGate(
                     data = Uri.fromParts("package", context.packageName, null)
                 }
                 context.startActivity(intent)
-            }
-        )
+            })
 
         else -> PermissionRationaleScreen(
             title = "This app needs access to your video to show your library.",
             buttonText = "Grant permission",
-            onButtonClick = { launcher.launch(videoPermission) }
-        )
+            onButtonClick = { launcher.launch(videoPermission) })
     }
 }
 
 @Composable
 fun PermissionRationaleScreen(
-    title: String,
-    buttonText: String,
-    onButtonClick: () -> Unit
+    title: String, buttonText: String, onButtonClick: () -> Unit
 ) {
     Column(
         modifier = Modifier

@@ -8,10 +8,8 @@ import coil3.video.VideoFrameDecoder
 import dagger.hilt.android.HiltAndroidApp
 
 @HiltAndroidApp
-class App: Application(), SingletonImageLoader.Factory {
+class App : Application(), SingletonImageLoader.Factory {
     override fun newImageLoader(context: PlatformContext): ImageLoader {
-        return ImageLoader.Builder(context)
-            .components { add(VideoFrameDecoder.Factory()) }
-            .build()
+        return ImageLoader.Builder(context).components { add(VideoFrameDecoder.Factory()) }.build()
     }
 }

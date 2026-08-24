@@ -30,6 +30,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.painter.ColorPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -65,6 +66,7 @@ fun VideoListScreen(
         Box(modifier = Modifier.padding(innerPadding)) {
             when (val state = viewModel.state.collectAsState().value) {
                 VideoListUiState.Loading -> CircularProgressIndicator()
+                VideoListUiState.Empty -> Text("No videos available.")
                 is VideoListUiState.Error -> Text(state.message)
                 is VideoListUiState.Content -> VideoList(
                     list = state.list, onItemClick = { onVideoClick(it) })
@@ -80,7 +82,9 @@ fun VideoList(
     LazyColumn {
         items(list, { it.id }) { item ->
             VideoItem(item, onItemClick)
-            HorizontalDivider()
+            HorizontalDivider(
+                color = MaterialTheme.colorScheme.surfaceVariant
+            )
         }
     }
 }
@@ -99,21 +103,24 @@ fun VideoItem(
             model = video.uri,
             contentDescription = video.title,
             contentScale = ContentScale.Crop,
+            placeholder = ColorPainter(MaterialTheme.colorScheme.surfaceVariant),
+            error = ColorPainter(MaterialTheme.colorScheme.surfaceVariant),
             modifier = Modifier
                 .size(96.dp, 64.dp)
                 .clip(RoundedCornerShape(8.dp))
         )
         Column(
-            modifier = Modifier.padding(8.dp),
-            verticalArrangement = Arrangement.Center
+            modifier = Modifier.padding(8.dp), verticalArrangement = Arrangement.Center
         ) {
             Text(
                 text = video.title,
-                style = MaterialTheme.typography.titleMedium
+                style = MaterialTheme.typography.titleMedium,
+                maxLines = 1
             )
             Text(
                 text = video.description,
-                style = MaterialTheme.typography.labelSmall
+                style = MaterialTheme.typography.labelSmall,
+                maxLines = 1
             )
 
         }

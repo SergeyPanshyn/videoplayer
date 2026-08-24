@@ -5,15 +5,13 @@ import android.content.Context
 import android.provider.MediaStore
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
-import kotlin.collections.plusAssign
 
 class VideoDataSource @Inject constructor(
     @ApplicationContext val context: Context
 ) {
 
     enum class SortOrder {
-        DATE_ADDED,
-        DURATION
+        DATE_ADDED, DURATION
     }
 
     fun getVideoList(sortOrder: SortOrder): List<VideoDataModel> {
@@ -35,11 +33,7 @@ class VideoDataSource @Inject constructor(
         val videoList = mutableListOf<VideoDataModel>()
 
         context.contentResolver.query(
-            collection,
-            projection,
-            null,
-            null,
-            sortOrder
+            collection, projection, null, null, sortOrder
         )?.use { cursor ->
             val idCol = cursor.getColumnIndexOrThrow(MediaStore.Video.Media._ID)
             val nameCol = cursor.getColumnIndexOrThrow(MediaStore.Video.Media.DISPLAY_NAME)
@@ -53,7 +47,7 @@ class VideoDataSource @Inject constructor(
 
                 videoList += VideoDataModel(
                     id = id,
-                    title = cursor.getString(nameCol),
+                    title = cursor.getString(nameCol) ?: "Untitled",
                     uri = uri,
                     durationMs = cursor.getLong(durationCol),
                     sizeBytes = cursor.getLong(sizeCol),
