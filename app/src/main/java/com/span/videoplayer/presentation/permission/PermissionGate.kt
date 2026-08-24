@@ -101,7 +101,7 @@ fun PermissionGate(
         )
 
         else -> PermissionRationaleScreen(
-            title = "This app needs access to your videos to show your library.",
+            title = "This app needs access to your video to show your library.",
             buttonText = "Grant permission",
             onButtonClick = { launcher.launch(videoPermission) }
         )

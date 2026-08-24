@@ -2,41 +2,48 @@ package com.span.videoplayer.presentation.list
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.span.videoplayer.data.VideoSortOrder
-import com.span.videoplayer.data.VideosDataSource
+import com.span.videoplayer.data.VideoDataSource
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class VideoListViewModel @Inject constructor(
-    private val videosDataSource: VideosDataSource
-): ViewModel() {
+    private val videoDataSource: VideoDataSource
+) : ViewModel() {
 
-    private val _state = MutableStateFlow<VideosListUiState>(VideosListUiState.Loading)
-    val state: StateFlow<VideosListUiState> = _state.asStateFlow()
+    private val _state = MutableStateFlow<VideoListUiState>(VideoListUiState.Loading)
+    val state: StateFlow<VideoListUiState> = _state.asStateFlow()
+
+    private var sortOption = SortOption.DATE_ADDED
 
     init {
-        loadVideos()
+        loadVideo()
     }
 
-    private fun loadVideos() {
+    private fun loadVideo() {
         viewModelScope.launch {
-            _state.value = VideosListUiState.Loading
+            _state.update { VideoListUiState.Loading }
             runCatching {
-                videosDataSource.getVideos(VideoSortOrder.DATE)
-            }.onSuccess { videos ->
-                if (videos.isEmpty()) {
-                    _state.value = VideosListUiState.Error("No videos available.")
+                videoDataSource.getVideoList(sortOption.toDataSort())
+            }.onSuccess { list ->
+                if (list.isEmpty()) {
+                    _state.update { VideoListUiState.Error("No video available.") }
                 } else {
-                    _state.value = VideosListUiState.Content(videos.map { it.toUiModel() })
+                    _state.update { VideoListUiState.Content(list.map { it.toUiModel() }) }
                 }
             }.onFailure {
-                _state.value = VideosListUiState.Error("Failed to load a videos.")
+                _state.update { VideoListUiState.Error("Failed to load a video.") }
             }
         }
+    }
+
+    fun onSortChanged(sortOption: SortOption) {
+        this@VideoListViewModel.sortOption = sortOption
+        loadVideo()
     }
 }

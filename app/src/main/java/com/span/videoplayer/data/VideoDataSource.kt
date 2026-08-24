@@ -3,21 +3,20 @@ package com.span.videoplayer.data
 import android.content.ContentUris
 import android.content.Context
 import android.provider.MediaStore
-import com.span.videoplayer.data.VideoSortOrder.*
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import kotlin.collections.plusAssign
 
-enum class VideoSortOrder {
-    DATE,
-    DURATION
-}
-
-class VideosDataSource @Inject constructor(
+class VideoDataSource @Inject constructor(
     @ApplicationContext val context: Context
 ) {
 
-    fun getVideos(sortOrder: VideoSortOrder): List<DeviceVideoModel> {
+    enum class SortOrder {
+        DATE_ADDED,
+        DURATION
+    }
+
+    fun getVideoList(sortOrder: SortOrder): List<VideoDataModel> {
         val collection = MediaStore.Video.Media.EXTERNAL_CONTENT_URI
 
         val projection = arrayOf(
@@ -28,12 +27,12 @@ class VideosDataSource @Inject constructor(
             MediaStore.Video.Media.DATE_ADDED
         )
 
-        val sortOrder = when(sortOrder) {
-            DATE -> MediaStore.Video.Media.DATE_ADDED
-            DURATION -> MediaStore.Video.Media.DURATION
+        val sortOrder = when (sortOrder) {
+            SortOrder.DATE_ADDED -> MediaStore.Video.Media.DATE_ADDED
+            SortOrder.DURATION -> MediaStore.Video.Media.DURATION
         }
 
-        val videosList = mutableListOf<DeviceVideoModel>()
+        val videoList = mutableListOf<VideoDataModel>()
 
         context.contentResolver.query(
             collection,
@@ -52,7 +51,7 @@ class VideosDataSource @Inject constructor(
                 val id = cursor.getLong(idCol)
                 val uri = ContentUris.withAppendedId(collection, id)
 
-                videosList += DeviceVideoModel(
+                videoList += VideoDataModel(
                     id = id,
                     title = cursor.getString(nameCol),
                     uri = uri,
@@ -63,6 +62,6 @@ class VideosDataSource @Inject constructor(
             }
 
         }
-        return videosList
+        return videoList
     }
 }

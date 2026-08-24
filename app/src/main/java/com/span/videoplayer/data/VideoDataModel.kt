@@ -2,7 +2,7 @@ package com.span.videoplayer.data
 
 import android.net.Uri
 
-data class DeviceVideoModel(
+data class VideoDataModel(
     val id: Long,
     val uri: Uri,
     val title: String,
